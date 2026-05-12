@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Form Validation</title>
+
+<style>
+  body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+
+  .container{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    width:350px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  }
+
+  h2{
+    text-align:center;
+    margin-bottom:20px;
+  }
+
+  .form-control{
+    margin-bottom:15px;
+  }
+
+  input{
+    width:100%;
+    padding:10px;
+    border-radius:5px;
+    border:2px solid #ccc;
+    outline:none;
+    transition:0.3s;
+  }
+
+  input.error{
+    border-color:red;
+  }
+
+  input.success{
+    border-color:green;
+  }
+
+  small{
+    color:red;
+    font-size:13px;
+  }
+
+  button{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:5px;
+    background:#667eea;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+  }
+
+  button:hover{
+    background:#5a67d8;
+  }
+
+  .success-message{
+    color:green;
+    text-align:center;
+    margin-top:10px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Registration Form</h2>
+
+  <form id="form">
+
+    <div class="form-control">
+      <input type="text" id="name" placeholder="Enter Name">
+      <small></small>
+    </div>
+
+    <div class="form-control">
+      <input type="email" id="email" placeholder="Enter Email">
+      <small></small>
+    </div>
+
+    <div class="form-control">
+      <input type="password" id="password" placeholder="Enter Password">
+      <small></small>
+    </div>
+
+    <div class="form-control">
+      <input type="password" id="confirm" placeholder="Confirm Password">
+      <small></small>
+    </div>
+
+    <button type="submit">Submit</button>
+    <div class="success-message" id="successMessage"></div>
+
+  </form>
+</div>
+
+<script>
+
+const form = document.getElementById("form");
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const confirmInput = document.getElementById("confirm");
+const successMessage = document.getElementById("successMessage");
+
+// Show Error Function
+function showError(input, message){
+  const formControl = input.parentElement;
+  const small = formControl.querySelector("small");
+  small.innerText = message;
+  input.classList.add("error");
+  input.classList.remove("success");
+}
+
+// Show Success Function
+function showSuccess(input){
+  const formControl = input.parentElement;
+  const small = formControl.querySelector("small");
+  small.innerText = "";
+  input.classList.add("success");
+  input.classList.remove("error");
+}
+
+// Email Regex
+function isValidEmail(email){
+  const regex = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+  return regex.test(email);
+}
+
+// Password Regex (1 uppercase, 1 number, 1 special char, min 6)
+function isStrongPassword(password){
+  const regex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{6,}$/;
+  return regex.test(password);
+}
+
+// Check Inputs
+function checkInputs(){
+
+  let isValid = true;
+
+  const nameValue = nameInput.value.trim();
+  const emailValue = emailInput.value.trim();
+  const passwordValue = passwordInput.value.trim();
+  const confirmValue = confirmInput.value.trim();
+
+  // Name
+  if(nameValue === ""){
+    showError(nameInput,"Name is required");
+    isValid = false;
+  }else{
+    showSuccess(nameInput);
+  }
+
+  // Email
+  if(!isValidEmail(emailValue)){
+    showError(emailInput,"Enter valid email");
+    isValid = false;
+  }else{
+    showSuccess(emailInput);
+  }
+
+  // Password
+  if(!isStrongPassword(passwordValue)){
+    showError(passwordInput,"Min 6 char, 1 uppercase, 1 number, 1 special char");
+    isValid = false;
+  }else{
+    showSuccess(passwordInput);
+  }
+
+  // Confirm Password
+  if(confirmValue !== passwordValue || confirmValue === ""){
+    showError(confirmInput,"Passwords do not match");
+    isValid = false;
+  }else{
+    showSuccess(confirmInput);
+  }
+
+  return isValid;
+}
+
+// Real-time validation
+[nameInput,emailInput,passwordInput,confirmInput].forEach(input=>{
+  input.addEventListener("keyup",checkInputs);
+});
+
+// Submit Event
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+
+  if(checkInputs()){
+    successMessage.innerText = "Form Submitted Successfully 🎉";
+
+    // Save in LocalStorage
+    const userData = {
+      name: nameInput.value,
+      email: emailInput.value
+    };
+
+    localStorage.setItem("user",JSON.stringify(userData));
+
+    form.reset();
+    document.querySelectorAll("input").forEach(input=>{
+      input.classList.remove("success");
+    });
+  }
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Snake Game</title>
+  <style>
+    :root{--bg:#e7eef6;--phone:#222;--screen:#d6e7ff;--accent:#0b6;}
+    html,body{height:100%;margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#cfe8ff,#f5f9ff);display:flex;align-items:center;justify-content:center}
+    .phone{width:360px;max-width:90vw;background:var(--phone);border-radius:26px;padding:18px 18px 22px;box-shadow:0 12px 30px rgba(0,0,0,.35);position:relative}
+    .phone:before{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-6px;width:120px;height:8px;background:linear-gradient(90deg,#111,#333);border-radius:8px}
+    .screen{background:var(--screen);height:480px;border-radius:12px;padding:12px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
+    header{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .brand{font-weight:700;color:#123;letter-spacing:1px}
+    .score{background:#fff;padding:4px 8px;border-radius:8px;font-weight:700}
+    canvas{background:#071827;border-radius:6px;width:100%;height:auto;display:block}
+    .controls{margin-top:10px;display:flex;gap:12px;justify-content:center}
+    .dpad{width:120px;display:grid;grid-template-columns:40px 40px 40px;grid-template-rows:40px 40px 40px;gap:6px}
+    .btn{width:40px;height:40px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#0b2b3a;color:#fff;font-weight:700;user-select:none;cursor:pointer}
+    .btn:active{transform:scale(.95)}
+    .actions{display:flex;flex-direction:column;gap:6px;justify-content:center}
+    .hint{font-size:12px;color:#062;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <header>
+        <div class="brand">NOKIA</div>
+        <div class="score">Score: <span id="score">0</span></div>
+      </header>
+      <canvas id="game" width="320" height="320"></canvas>
+      <div class="controls">
+        <div class="dpad">
+          <div></div>
+          <div class="btn" id="up">▲</div>
+          <div></div>
+          <div class="btn" id="left">◀</div>
+          <div class="btn" id="start">Start</div>
+          <div class="btn" id="right">▶</div>
+          <div></div>
+          <div class="btn" id="down">▼</div>
+          <div></div>
+        </div>
+        <div class="actions">
+          <div class="btn" id="speed">Speed</div>
+          <div class="btn" id="restart">Restart</div>
+        </div>
+      </div>
+      <div class="hint">Use arrow keys or buttons to play.</div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+
+    const GRID = 16;
+    const COLS = canvas.width / GRID;
+    const ROWS = canvas.height / GRID;
+
+    let snake, dir, food, timer, speed, running;
+
+    function reset() {
+      snake = [
+        {x: 8, y: 10},
+        {x: 7, y: 10},
+        {x: 6, y: 10}
+      ];
+      dir = {x: 1, y: 0};
+      food = {x: 15, y: 10};
+      speed = 120;
+      running = false;
+      updateScore();
+      draw();
+    }
+
+    function updateScore() {
+      scoreEl.textContent = snake.length - 3;
+    }
+
+    function placeFood() {
+      let valid = false;
+      while (!valid) {
+        food = {x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS)};
+        valid = !snake.some(s => s.x === food.x && s.y === food.y);
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = '#071827';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // food
+      ctx.fillStyle = '#ffcc00';
+      ctx.fillRect(food.x * GRID, food.y * GRID, GRID - 2, GRID - 2);
+      // snake
+      snake.forEach((part, i) => {
+        ctx.fillStyle = i === 0 ? '#00ff88' : '#00cc66';
+        ctx.fillRect(part.x * GRID, part.y * GRID, GRID - 2, GRID - 2);
+      });
+    }
+
+    function move() {
+      const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+      if (head.x < 0) head.x = COLS - 1;
+      if (head.x >= COLS) head.x = 0;
+      if (head.y < 0) head.y = ROWS - 1;
+      if (head.y >= ROWS) head.y = 0;
+
+      if (snake.some((s, i) => i > 0 && s.x === head.x && s.y === head.y)) {
+        stop();
+        alert('Game Over! Score: ' + (snake.length - 3));
+        return;
+      }
+
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        placeFood();
+        updateScore();
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      timer = setInterval(move, speed);
+    }
+
+    function stop() {
+      running = false;
+      clearInterval(timer);
+    }
+
+    function restart() {
+      stop();
+      reset();
+      start();
+    }
+
+    function changeDir(newDir) {
+      if (snake.length > 1 && newDir.x === -dir.x && newDir.y === -dir.y) return;
+      dir = newDir;
+    }
+
+    document.getElementById('start').onclick = start;
+    document.getElementById('restart').onclick = restart;
+    document.getElementById('speed').onclick = () => {
+      speed = Math.max(40, speed - 20);
+      if (running) {
+        clearInterval(timer);
+        timer = setInterval(move, speed);
+      }
+      alert('Speed increased!');
+    };
+
+    ['up','down','left','right'].forEach(id => {
+      document.getElementById(id).onclick = () => {
+        if(id==='up') changeDir({x:0,y:-1});
+        if(id==='down') changeDir({x:0,y:1});
+        if(id==='left') changeDir({x:-1,y:0});
+        if(id==='right') changeDir({x:1,y:0});
+        start();
+      }
+    });
+
+    window.addEventListener('keydown', e => {
+      if(e.key==='ArrowUp') changeDir({x:0,y:-1});
+      if(e.key==='ArrowDown') changeDir({x:0,y:1});
+      if(e.key==='ArrowLeft') changeDir({x:-1,y:0});
+      if(e.key==='ArrowRight') changeDir({x:1,y:0});
+      start();
+    });
+
+    reset();
+  </script>
+</body>
+</html>
