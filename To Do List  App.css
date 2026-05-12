@@ -1,0 +1,49 @@
+
+body{
+	background: whitesmoke;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+}
+.container{
+	background: white;
+	padding: 40px;
+	border-radius: 7px;
+}
+input{
+	height: 30px;
+	width: 280px;
+	border-radius: 10px;
+}
+button{
+	background: green;
+	color: whitesmoke;
+	border-radius: 4px;
+	height: 30px;
+	border: none;
+}
+ul{
+	padding: 0px;
+}
+li{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: whitesmoke;
+	list-style: none;
+	margin-bottom: 10px;
+	border-radius: 8px;
+	padding:10px;
+}
+.db{
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	background: cyan;
+	color: red;
+}
+.done{
+	text-decoration: line-through;
+	color: grey;
+}
